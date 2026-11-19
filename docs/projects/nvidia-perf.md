@@ -10,6 +10,8 @@
 
 - 实现跨平台命令行、可配置指标采集与 UI 展示的 GPU 指标监测工具，100 fps 采样下 CPU 占用通常低于 2%，随 [Nsight Perf SDK 2026.3](https://developer.nvidia.com/nsight-perfsdk/getting-started/release-note-v2026.3) 发布。
 
+![Monitoring Tool：敲一条命令，直接看 GPU 实时计数器](../../assets/monitoring-demo.gif)
+
 ### 技术实现
 
 - **采样**：基于 Nsight Perf SDK 的 periodic sampler，按固定周期向 GPU 取硬件计数器（约 10 ms 一次，对应 100 fps 的刷新粒度）；一次请求批量读取一组 metric，避免逐 counter 触发查询。
