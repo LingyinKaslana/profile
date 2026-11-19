@@ -1,6 +1,6 @@
 # 英伟达半导体科技（上海）｜ PerfWorks / PerfSDK 性能监测团队
 
-> 驱动 GPU 硬件计数器采样、并将原始 counter 解码为指标，为 Nsight System 提供底层支持。
+> 驱动 GPU 硬件计数器采样、并将原始 counter 解码为指标，为 Nsight Systems 提供底层支持。
 
 **时间** 2026.03 – 2026.11 · **角色** Software Engineer Intern
 
@@ -14,7 +14,7 @@
 
 ### 技术实现
 
-- **采样**：基于 Nsight Perf SDK 的 periodic sampler，按固定周期向 GPU 取硬件计数器（约 10 ms 一次，对应 100 fps 的刷新粒度）；一次请求批量读取一组 metric，避免逐 counter 触发查询。
+- **采样**：基于 Nsight Perf SDK 的 periodic sampler，按固定周期向 GPU 取硬件计数器（约 10 ms 一次，对应 100 fps 的采样率）；一次请求批量读取一组 metric，避免逐 counter 触发查询。
 - **线程模型**：采样与渲染分线程，中间用预分配的环形缓冲传递快照；渲染端只读最新一帧，终端刷新慢不会反向拖慢采样。
 - **终端 UI**：跨平台终端抽象，用 ANSI 转义序列做整屏重绘与差异刷新，只重画数值变化的行，避免全屏刷新的终端开销。
 - **可配置指标**：启动时读取配置/参数里的 metric 列表，先用 CounterAvailability 过滤当前 GPU 不支持的指标，再组装采样请求，指标名与显示格式分开配置。
@@ -24,8 +24,8 @@
 ### 难点
 
 - 有性能要求，所以需要无锁编程，以及一些常见的代码优化。
-- 如果 CPU 卡住，GPU 端的 PMA buffer 会溢出并停止采样，需要自动重启采样。
-- Monitoring 是“低频”采样工具，很多 counter 不能用，需要过滤（如 `graphics-low-speed-1.yaml`）。
+- 如果 CPU 卡住，GPU 端的 PMA buffer 会溢出并停止采样，需要自动重启。
+- Monitoring 是「低频」采样工具，很多 counter 不能用，需要过滤（如 `graphics-low-speed-1.yaml`）。
 
 ## Profiler 离线解码（Offline Decode, CUDA 13.5-nsight-perf-sdk-for-ai 的核心之一）
 
@@ -36,7 +36,7 @@
 
 ### 一、用于 decoder 的调试
 
-- 在 PerfSDK / PerfWorks 开发中发现问题时，用离线解码把「采样」和「解码」拆开：先确认采集侧的数据对不对，再看解码侧算得对不对，问题出在哪一段一目了然。
+- 在 PerfWorks / PerfSDK 开发中发现问题时，用离线解码把「采样」和「解码」拆开：先确认采集侧的数据对不对，再看解码侧算得对不对，问题出在哪一段一目了然。
 - 采样本身很贵，解码才是耗时大头；把解码移出采集路径后，采集侧只把 counter 落成 Snapshot，事后重建 Decoder 离线解码，采样不再被解码拖累，可以全速跑满全部 counter。
 - 复现：理论上采样拿不到两份完全相同的数据，问题难以稳定重现；而 Snapshot 可以反复解码、反复使用，排查始终回到同一份原始数据上。
 
