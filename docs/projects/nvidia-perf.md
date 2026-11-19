@@ -55,6 +55,8 @@
 
 ## 其他
 
+其他主要由我负责的内容：
+
 - PerfWorks / PerfSDK 开始支持 Shield 2。
 - 维护 PIX 的 NVIDIA 插件。
 - 新增插件，让 Android 性能检测工具 APA 支持 NVIDIA GPU。
