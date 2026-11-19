@@ -55,7 +55,7 @@
 
 ## 其他
 
-其他主要负责的内容：
+其他我主要负责的内容：
 
 - PerfWorks / PerfSDK 开始支持 Shield 2。
 - 维护 PIX 的 NVIDIA 插件。
