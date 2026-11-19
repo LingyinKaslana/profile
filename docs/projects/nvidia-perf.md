@@ -19,3 +19,8 @@
 ## 存量代码的 AI 审查（AI Code Review）
 
 - 存量千万行 C/C++ 的全量 AI 审查不可行——可疑点远超人工确认能力；提出只筛高置信、与业务无关的局部缺陷，经 10 万行抽样验证，检出 6 个高置信 bug、成本不到 1 美元，外推全仓不到 500 美元，极大减轻人工排查压力。
+
+## 相关链接
+
+- 发布说明（Nsight Perf SDK 2026.3）：https://developer.nvidia.com/nsight-perfsdk/getting-started/release-note-v2026.3
+- 下载：https://developer.nvidia.com/nsight-perf-sdk
