@@ -2,8 +2,8 @@
 
 ## 实习
 
-- [NVIDIA PerfSDK：GPU 计数器离线解码与轻量监控](docs/projects/nvidia-perf.md) — **2026.03 – 2026.11** · Software Engineer Intern
-  100 fps 采样下 CPU 占用 < 2%；解码移出采集路径后，采样可全速跑满全部 counter。
+- [英伟达半导体科技（上海）｜ PerfWorks / PerfSDK 性能监测团队](docs/projects/nvidia-perf.md) — **2026.03 – 2026.11** · Software Engineer Intern
+  驱动 GPU 硬件计数器采样、并将原始 counter 解码为指标，为 Nsight System 提供底层支持。
 
 ## 项目
 
