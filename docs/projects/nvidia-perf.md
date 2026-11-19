@@ -42,7 +42,7 @@
 
 ### 二、nsight-perf-sdk-for-ai
 
-- CUDA 13.5 首次提出 nsight-perf-sdk-for-ai 的概念。
+- CUDA 13.5 首次提出 nsight-perf-sdk-for-ai 的概念，更关心持续的、非侵入式的监测。
 - 为 Perfetto Trace Exporter 与 Continuous Export 接上离线解码：采集侧只落盘，解码放到之后做。
 - 为 AI 场景把监测对系统的干扰压到最低，[综合性能开销低于 1%](https://github.com/NVIDIA/nsight-perf-sdk-for-ai#continuous-low-overhead-profiling)。
 
