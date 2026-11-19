@@ -10,9 +10,11 @@
 
 ## 一眼看
 
-| 3 篇一作 | 50× 加速 | GSM8K 4.78% → 23.73% | 100 fps / CPU < 2% | 竞赛 2 金 1 银 |
-| :-- | :-- | :-- | :-- | :-- |
-| ICLR 27 在投 · AAAI 27 在投 · CVPR 26 Findings | Fast-HOI，20 步 vs 上千步 | 单卡 1.3B，CPT→SFT→DAPO | NVIDIA GPU 指标监控 | CCPC ×2 · ICPC EC Final · 百度之星 |
+- **3 篇一作** —— ICLR 2027 在投 · AAAI 2027 在投 · CVPR 2026 Findings
+- **50×** —— Fast-HOI 推理加速（20 步 vs 上千步）
+- **4.78% → 23.73%** —— GSM8K，单卡 1.3B 全流程（CPT → SFT → DAPO）
+- **100 fps / CPU < 2%** —— NVIDIA GPU 指标监控
+- **2 金 1 银** —— CCPC ×2 · ICPC EC Final · 百度之星决赛
 
 ## 目录
 
