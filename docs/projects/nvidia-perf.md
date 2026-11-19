@@ -55,6 +55,6 @@
 
 ## 其他
 
-- 开启 PerfWorks / PerfSDK 对 Shield 2 的支持。
+- PerfWorks / PerfSDK 开始支持 Shield 2。
 - 维护 PIX 的 NVIDIA 插件。
 - 新增插件，让 Android 性能检测工具 APA 支持 NVIDIA GPU。
