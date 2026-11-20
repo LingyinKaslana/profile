@@ -29,6 +29,8 @@
   - 用这批标签训一个 ContactNet 接触质量判别器（critic），把 VLM 的语义判断变成可优化的稠密奖励；
   - 以 critic 为奖励跑强化学习，学一个 9 维手链残差策略（3 维平移 + 6 维旋转），作用在 shoulder–elbow–wrist 链上；
   - 推理时对 5 个 action scale 各出一版候选，再用 temporal DP 沿时间挑修正，严格保持物体、root、脚部不变。
+
+![VLM 按方位 / 放置 / 穿透三维打分：上排 MaMi-HOI 被判 REJECTED（掌背朝杆、杆穿过掌根），下排 TriFactorHOI 被判 ACCEPTABLE（掌面贴合，只是略有间隙）](../../assets/hand-fix-vlm.png)
 - **结果**（482 条 FullBody 序列、67,034 个 hand-contact 状态）：
   - 手部穿透 0.5313 → 0.4868，**降 8.4%**；
   - 接触精度 0.8081 → 0.8147（+0.8%），R-Prec 0.7354 → 0.7438（+1.1%）；
