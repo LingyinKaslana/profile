@@ -18,6 +18,7 @@
   - 消除 bank conflict：用 `idx + (idx >> 5)` 把访问错开，共享内存多开 1/32。
 - **结果**：内核耗时快于 CPU，三项优化有可见收益。
 - 顺带熟悉了 thrust——CUDA 自带的并行算法库，可以当作手写 scan 的对照。
+- 原始笔记：[CIS-5650 GPU 编程与架构：项目-2（Stream Compaction）](https://zhuanlan.zhihu.com/p/1985384546963842065)
 
 ## 二、鸟群仿真：0.5 fps → 45+ fps
 
@@ -28,17 +29,4 @@
 - **B 提到 256**：格子更细、每格更空，但 B³ 的数据从 CPU 搬到 GPU 太贵；改成只传非空格子的增量（UpdateBox / ClearBox 在 GPU 侧改），并把所有数组塞进一块连续 buffer，一次 memcpy 搞定。
 - **两个附带优化**：线程 id 按格子排序后再映射，让同一 warp 落在同一格，减少分歧（实测约 2×）；kernel 之间不急着同步，CPU 准备下一帧、GPU 继续算，形成流水。
 - **结果**：45+ fps。
-
-## 关键数字
-
-| 指标 | 数值 |
-| :-- | :-- |
-| 前缀和复杂度 | O(n log n) → O(n) |
-| 仿真帧率 | 0.5 → 45+ fps |
-| 仿真实体数 | 16,384 |
-| 加速比 | 约 90× |
-
-## 原始笔记
-
-- [CIS-5650 GPU 编程与架构：项目-1（鸟群仿真）](https://zhuanlan.zhihu.com/p/82007625202)
-- [CIS-5650 GPU 编程与架构：项目-2（Stream Compaction）](https://zhuanlan.zhihu.com/p/1985384546963842065)
+- 原始笔记：[CIS-5650 GPU 编程与架构：项目-1（鸟群仿真）](https://zhuanlan.zhihu.com/p/82007625202)
