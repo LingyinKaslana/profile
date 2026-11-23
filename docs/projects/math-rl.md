@@ -14,16 +14,42 @@
 
 ## 二、训练侧：融合 + 编译
 
-- **先有校验，再谈加速**：每个候选后端都要过一遍数值检查——loss 差、全局梯度相对 L2、逐张量 probe 梯度；不通过就不进训练。所以 `runs/cpt_optimization_20261008/` 里是几十个候选，而不是一个「调好的版本」。
-- **融合 + torch.compile**：RMSNorm / SwiGLU / RoPE / CE 融进计算图，Adam 也走 compiled AdamW，和 native 实现逐项对照。
-- **Liger 内核**：试了 `rms_swiglu_rope`，梯度相对 L2 约 3%、loss 差 1.8e-3，没通过校验，放弃；`liger_lce`（chunked CE，chunk=16）这版通过，保留。
-- **chunked CE**：chunk 4 / 16 / 64 扫了一轮，在压显存的同时保住数值。
+- **先有校验，再谈加速**：每个候选后端都要过一遍数值检查——loss 差、全局梯度相对 L2、逐张量 probe 梯度；不通过就不进训练。所以 `runs/cpt_optimization_20261008/` 里是 30 个候选，而不是一个「调好的版本」。
+- **基线**：native 实现，59,663 tok/s，峰值显存 180.5 GiB。
 
-同模型、同 batch、同精度下，用 Nsight Perf 采计数器对比：
+### 第 1 步：换 Liger 融合内核
+
+| 换掉什么 | 吞吐 | 相对基线 | 峰值显存 |
+| :-- | --: | --: | --: |
+| RMSNorm | 66,466 | +11% | 169.8 GiB |
+| + SwiGLU | 68,746 | +15% | 154.5 GiB |
+| 只换 CE（bf16） | 64,075 | +7% | 134.6 GiB |
+| RMS + SwiGLU + CE | 73,983 | **+24%** | 108.6 GiB |
+
+- 显存从 180.5 降到 108.6 GiB，是因为融合后不再单独物化中间激活。
+- 但 **RMS + SwiGLU + RoPE** 这一版数值没通过（梯度相对 L2 约 3%、loss 差 1.8e-3），直接淘汰。
+
+### 第 2 步：chunked CE 的块大小
+
+- chunk 4 / 16 / 64 分别跑出 73,317 / 73,968 / 74,170 tok/s，显存 101–105 GiB；**取 chunk=16**（收益已到顶、显存最省）。
+
+### 第 3 步：整模型编译
+
+| 版本 | 吞吐 | 相对基线 | 峰值显存 |
+| :-- | --: | --: | --: |
+| 只编译模型 | 94,752 | 1.59× | 118.7 GiB |
+| + compiled AdamW | 98,941 | 1.66× | 118.7 GiB |
+| + global batch 32 | 99,920 | 1.67× | **217.2 GiB（不可用）** |
+| 最终选择（tailguard） | **99,159** | **1.66×** | **118.7 GiB** |
+
+- global batch 32 再快 1%，但显存顶到 217 GiB，等于不可用；最后选 tailguard 版，速度和它持平，显存还比基线少 **61.8 GiB**。
+
+### 第 4 步：profiling 确认收益来自哪
+
+同模型、同 batch、同精度，用 Nsight Perf 采计数器对比（baseline → 最终版）：
 
 | 指标 | baseline | 优化后 |
 | :-- | --: | --: |
-| 吞吐（token/s） | 59,110 | **97,367（1.65×）** |
 | forward + loss | 184.9 ms | 99.0 ms |
 | backward | 334.4 ms | 219.5 ms |
 | optimizer | 25.9 ms | 9.4 ms |
@@ -31,7 +57,12 @@
 | L2 命中率 | 38.4% | 54.1% |
 | 每 token 的 HBM 流量 | 55.4 MB | 25.8 MB（−53.5%） |
 
-不是「换了个快实现」那么简单：Tensor pipe 利用率翻倍、HBM 流量减半、L2 命中上升，说明是**算子结构**变了，而不是单纯调大 batch。
+Tensor pipe 利用率翻倍、HBM 流量减半、L2 命中上升——说明是**算子结构**变了，不是单纯调大 batch。
+
+### 没跑通的候选
+
+- 3 个编译候选直接失败（编译 crash）。
+- 4 个数值不过：per-layer precise CE（梯度相对 L2 ≈1%）、RMS + precise CE（3.8%）、unemulated 版本（4.3%）、RMS + SwiGLU + RoPE（3%）。
 
 ## 三、rollout 侧：采样怎么变快
 
