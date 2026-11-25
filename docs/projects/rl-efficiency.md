@@ -236,6 +236,32 @@ $$d_t = |\ln p_{0,t} - \ln q_t| \quad (\text{nats})$$
 
 一句话收尾：**能压低梯度的是「按 token 重新加权」（TIS），而不是「按阈值砍掉某个位置」（mask）**；而且梯度降下来，也还不等于输出变好。
 
+**换条路：从根因上消掉漂移（Score Centering）**
+
+上面八组都是在「事后压梯度」。另一种思路是直接修掉产生漂移的那一项——[Score Centering](https://arxiv.org/abs/2609.20807)（Marek & Ryabinin, 2026）的做法是：既然训练-推理失配（TIM）会让 policy gradient 里多出一项"score drift"，那就把 sampler 有效采样质量下的期望 score 减掉，从根上抵消它，而不是靠重要性权重去缩小它。它可以单独用，也能叠在 TIS / MIS 之上。
+
+我在 8×A6000 上复现了这套东西（JAX 参考实现 postax，Qwen3-0.6B / Countdown，weight-noise 模拟 TIM，每个 100 步）：
+
+![PG vs SC 在 TIM=0.02 下的三条种子曲线，以及 sampler-trainer KL](../../assets/sc-pg-vs-sc.png)
+
+- **TIM=0.02**：PG 三条种子在 20 步后集体塌掉（终点 0.096，最好的一条也只到 0.18）；SC 稳定爬到 **0.50–0.58**。
+- **sampler-trainer KL**：PG 后期冲到 0.03 以上，SC 一直压在 **0.01** 附近——SC 修的正是这个漂移。
+- **没有人工 TIM 时，SC 是 no-op**：两条曲线基本重合（0.566 vs 0.541），说明它没有额外副作用。
+
+把失配程度加大，差别更明显：
+
+![失配严重度阶梯：无 TIM → 0.02 → 0.05](../../assets/sc-severity.png)
+
+- TIM 从 0.02 加到 0.05，PG 直接归零；SC 仍保持在 0.50 左右。
+- 同一张图右侧的 KL 也同步：越严重的 TIM，PG 的漂移越大，SC 几乎不动。
+
+另外还试了一个自制的「mask」修法：在同一组的正确 / 错误回答之间找 **≥8 token 的共享片段**（模板化推理），把两边都 mask 掉。8–10 个种子下：
+
+- 没有 SC 时，mask 主要降低**种子间方差**（终点 0.533 ± 0.154 → 0.581 ± 0.074），均值提升不显著；
+- 一旦开了 SC，mask 基本没有增量（0.615 ± 0.044 vs 0.600 ± 0.042 / 0.623 ± 0.026）。
+
+所以这两条线其实是同一个结论的两面：**盯着 token 砍（mask）只能压方差，盯着漂移修（SC）才能把训练救回来**；而一旦漂移被修掉，前一类修法就变成冗余的了。
+
 ## 五、被证伪或修正的假设
 
 | 最初猜想 | 当前判断 |
@@ -265,3 +291,4 @@ $$d_t = |\ln p_{0,t} - \ln q_t| \quad (\text{nats})$$
 ## 参考
 
 - [dapo-rollout-stability（45 个实验单元 / 52 条 claim）](https://github.com/LingyinKaslana/dapo-rollout-stability)
+- [Score Centering: Stabilizes Off-policy Reinforcement Learning（arXiv 2609.20807）](https://arxiv.org/abs/2609.20807) · [参考实现](https://github.com/martin-marek/score-centering)
