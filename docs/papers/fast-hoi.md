@@ -29,3 +29,8 @@
 | 去噪步数 | 20 步（原模型上千步） |
 | 推理加速 | 50× 以上 |
 | 代码 | 已开源 |
+
+## 论文与视频
+
+- [论文 PDF](../../assets/papers/cvpr-paper.pdf)（4.1 MB）
+- [演示视频](../../assets/papers/cvpr-video.mp4)（22.2 MB，MP4）

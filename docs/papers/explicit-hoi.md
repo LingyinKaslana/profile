@@ -27,3 +27,8 @@
 | :-- | :-- |
 | 评测数据集 | GRAB、OakInk |
 | 显式信号 | 力 / 力矩、affordance map |
+
+## 论文与视频
+
+- [论文 PDF](../../assets/papers/aaai-paper.pdf)（5.1 MB）
+- [演示视频](../../assets/papers/aaai-video.mp4)（7.3 MB，MP4）
