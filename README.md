@@ -1,5 +1,3 @@
-# 潘小康
-
 ## 实习
 
 - [英伟达半导体科技（上海）｜ PerfWorks / PerfSDK 性能监测团队](docs/projects/nvidia-perf.md) — **2026.03 – 2026.11** · Software Engineer Intern
